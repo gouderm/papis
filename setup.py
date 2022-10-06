@@ -185,6 +185,7 @@ setup(
             "rm=papis.commands.rm:cli",
             "run=papis.commands.run:cli",
             "serve=papis.commands.serve:cli",
+            "serve2=papis.commands.serve2:cli",
             "update=papis.commands.update:cli",
         ],
         'papis.downloader': [
