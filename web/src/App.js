@@ -1,29 +1,14 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { Container, Row, Col } from 'reactstrap';
 import axios from "axios";
 import {
     Table,
-    Badge,
-    Fade,
-    Collapse,
-    Navbar,
-    NavbarToggler,
-    NavbarBrand,
-    Nav,
-    NavItem,
-    NavLink,
-    UncontrolledDropdown,
-    DropdownToggle,
-    DropdownMenu,
-    DropdownItem,
-    NavbarText,
     ListGroup,
     ListGroupItem,
     ListGroupItemText,
     ListGroupItemHeading,
 } from 'reactstrap';
-import { Document } from 'react-pdf'
-import { Accordion, Button, Form, Pagination } from 'react-bootstrap';
+import { Accordion, Button, Pagination } from 'react-bootstrap';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 
@@ -36,7 +21,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 
-//const SERVER = "http://localhost:8080" // only for development
+// const SERVER = "http://localhost:8080" // only for development
 const SERVER = ""
 
 
@@ -126,6 +111,8 @@ class NotesEditor extends React.Component {
 
 
     update() {
+        if (this.props.selectedRef._hash === undefined) return
+
         axios({
             url: SERVER+"/api/libraries/" + this.props.selectedLib + "/docs/" + this.props.selectedRef._hash + "/notes",
             method: "GET",
@@ -136,10 +123,6 @@ class NotesEditor extends React.Component {
         }).catch((error) => {
             console.log("could not load notes.", error)
         })
-    }
-
-    componentDidMount() {
-        this.update()
     }
 
     componentDidUpdate(prevProps) {
@@ -177,8 +160,6 @@ class Selector extends React.Component {
         }).catch((error) => {
             console.log("could not load libraries.", error)
         })
-
-        this.onSelectLib("phd")
     }
 
     onSelectLib(lib, index) {
@@ -265,7 +246,7 @@ class Selector extends React.Component {
                 {
                     this.state.libraries.map((lib, index) => {
                         let active = this.state.activeLib === lib ? "active" : "";
-                        return <ListGroupItem className={active} action onClick={() => this.onSelectLib(lib, index)}>{lib}</ListGroupItem>
+                        return <ListGroupItem key={index} className={active} action onClick={() => this.onSelectLib(lib, index)}>{lib}</ListGroupItem>
                     })
                 }
             </ListGroup>
@@ -297,7 +278,12 @@ class Selector extends React.Component {
             <div>
                 {
                     this.state.tags.map((tag, index) => {
-                        return <Button variant={this.state.activeTags.indexOf(tag) >= 0 ? "primary" : "secondary"} onClick={() => this.onSelectTags(tag, index)}>{tag}</Button>
+                        return <Button
+                            key={index}
+                            variant={this.state.activeTags.indexOf(tag) >= 0 ? "primary" : "secondary"}
+                            onClick={() => this.onSelectTags(tag, index)}>
+                            {tag}
+                        </Button>
                     })
                 }
             </div>
@@ -336,9 +322,6 @@ class References extends React.Component {
             }).catch((error) => {
                 console.log("could not load references.", error)
             })
-    }
-    componentDidMount() {
-        this.update()
     }
 
     componentDidUpdate(prevProps) {
@@ -408,6 +391,7 @@ class References extends React.Component {
                     this.getCurrentRefsOnPage().map((ref, index) => (
                         <ListGroupItem
                             action
+                            key={index}
                             className={JSON.stringify(ref) === JSON.stringify(this.state.activeRef) ? "active" : ""}
                             onClick={() => this.onSelectRef(ref)}
                             tag="button"
@@ -438,7 +422,7 @@ const Attachments = (props) => {
     for (let i = 0; i < numFiles; i++) {
         let pdfURL = SERVER+"/api/libraries/" + selectedLib + "/docs/" + selectedRef._hash + "/file/" + i
         files.push(
-            <Accordion.Item eventKey={i.toString()}>
+            <Accordion.Item key={i} eventKey={i.toString()}>
                 <Accordion.Header>File {i}</Accordion.Header>
                 <Accordion.Body>
                     <iframe id={i} title={i} src={pdfURL} style={{ width: "100%", height: "500px" }} />
@@ -528,7 +512,6 @@ export default class App extends React.Component {
     }
 
     onNewReferenceQuery = (lib, tags, folders, query) => {
-        console.log("NEW QUERY", lib, tags, folders)
         this.setState({
             selectedLib: lib,
             tags: ((tags !== undefined) ? tags : ""),
