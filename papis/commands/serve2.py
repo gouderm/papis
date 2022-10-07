@@ -80,13 +80,15 @@ def filter_folders(
     return _filter_fn
 
 
-def create_app() -> Flask:
+def create_app(cors: bool) -> Flask:
 
-    web_dir = os.path.dirname(os.path.abspath(__file__)) + "/web/build"
-    web_dir = "/home/gouderm/papis_dev/papis_fork/papis/commands/web/build"
+    import __main__
+    p = Path(__main__.__file__)
+    web_dir = str(p.parent.parent / Path("share/web"))
 
     app = Flask(__name__, static_folder=web_dir+"/static")
-    CORS(app)
+    if cors:
+        CORS(app)
 
     @app.route("/", defaults={"path": "index.html"})
     @app.route("/<path:path>")
@@ -233,8 +235,9 @@ def create_app() -> Flask:
 @click.option("--address",
               "--host",
               help="Address to bind",
-              default="localhost")
-def cli(address: str, port: int, git: bool) -> None:
+              default="0.0.0.0")
+@click.option("--cors", is_flag=True)
+def cli(address: str, port: int, cors: bool, git: bool) -> None:
     """
     Start a papis server
     """
@@ -247,6 +250,5 @@ def cli(address: str, port: int, git: bool) -> None:
     logger.info("THIS COMMAND IS EXPERIMENTAL, "
                 "expect bugs, feedback appreciated")
 
-    app = create_app()
-    address = "0.0.0.0"
+    app = create_app(cors=cors)
     app.run(debug=True, host=address, port=port)
