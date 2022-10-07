@@ -39,7 +39,12 @@ else:
             "contrib/papis.desktop",
         ]),
 
+        ("share/web", glob.glob("web/build/*.*")),
+        ("share/web/static/js", glob.glob("web/build/static/js/*.*")),
+        ("share/web/static/css", glob.glob("web/build/static/css/*.*")),
+
     ]
+
 
 included_packages = ['papis'] + ['papis.' + p for p in find_packages('papis')]
 
@@ -112,6 +117,10 @@ setup(
             'sphinx_rtd_theme',
             'pytest-cov',
             'mypy>=0.7',
+        ],
+        serve2=[
+            'Flask>=2.2.2',
+            'Flask-Cors>=3.0.10',
         ]
     ),
     description=(
@@ -137,7 +146,7 @@ setup(
         'console_scripts': [
             'papis=papis.commands.default:run',
         ],
-        "papis.hook.on_edit_done" : [
+        "papis.hook.on_edit_done": [
         ],
         'papis.exporter': [
             'bibtex=papis.bibtex:exporter',
