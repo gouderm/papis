@@ -126,8 +126,9 @@ class NotesEditor extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps !== this.props)
+        if (JSON.stringify(prevProps) !== JSON.stringify(this.props)) {
             this.update()
+        }
     }
 
     render() {
@@ -326,8 +327,9 @@ class References extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps !== this.props)
+        if (JSON.stringify(prevProps) !== JSON.stringify(this.props)) {
             this.update()
+        }
     }
 
     getNumPages() {
@@ -549,8 +551,8 @@ export default class App extends React.Component {
     onNewReferenceQuery = (lib, tags, folders, query) => {
         this.setState({
             selectedLib: lib,
-            tags: ((tags !== undefined) ? tags : ""),
-            activeFolders: ((folders !== undefined) ? folders : ""),
+            tags: ((tags !== undefined) ? tags : []),
+            activeFolders: ((folders !== undefined) ? folders : []),
             activeQuery: ((query !== undefined) ? query : "")
         })
     }
@@ -573,7 +575,7 @@ export default class App extends React.Component {
                         <Selector onNewReferenceQuery={this.onNewReferenceQuery} />
                     </Col>
                     <Col className="bg-light border" style={{ height: "100%" }}>
-                        <References selectedLib={this.state.selectedLib} tags={this.state.tags} activeFolders={this.state.activeFolders} activeQuery={this.state.activeQuery} onSelectRef={this.onSelectRef} />
+                        <References selectedLib={this.state.selectedLib} tags={[].concat(this.state.tags)} activeFolders={[].concat(this.state.activeFolders)} activeQuery={this.state.activeQuery} onSelectRef={this.onSelectRef} />
                     </Col>
                     <Col className="bg-light border" style={{ height: "100%" }}>
                         <Preview selectedLib={this.state.selectedLib} selectedRef={{ ...this.state.selectedRef }} />
