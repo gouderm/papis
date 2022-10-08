@@ -126,7 +126,8 @@ class NotesEditor extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        this.update()
+        if (prevProps !== this.props)
+            this.update()
     }
 
     render() {
@@ -325,14 +326,8 @@ class References extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (
-            (prevProps["selectedLib"] !== this.props["selectedLib"]) ||
-            (prevProps["tags"] !== this.props["tags"]) ||
-            (prevProps["activeFolders"] !== this.props["activeFolders"]) ||
-            (prevProps["activeQuery"] !== this.props["activeQuery"])
-        ) {
+        if (prevProps !== this.props)
             this.update()
-        }
     }
 
     getNumPages() {
