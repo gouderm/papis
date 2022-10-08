@@ -114,7 +114,7 @@ class NotesEditor extends React.Component {
         if (this.props.selectedRef._hash === undefined) return
 
         axios({
-            url: SERVER+"/api/libraries/" + this.props.selectedLib + "/docs/" + this.props.selectedRef._hash + "/notes",
+            url: SERVER + "/api/libraries/" + this.props.selectedLib + "/docs/" + this.props.selectedRef._hash + "/notes",
             method: "GET",
         }).then((res) => {
             if (this.state.notes !== res.data) {
@@ -153,7 +153,7 @@ class Selector extends React.Component {
     componentDidMount() {
         // fetch new library-list
         axios({
-            url: SERVER+"/api/libraries",
+            url: SERVER + "/api/libraries",
             method: "GET",
         }).then((res) => {
             this.setState({ "libraries": res.data })
@@ -168,7 +168,7 @@ class Selector extends React.Component {
 
         // fetch new tag-list
         axios({
-            url: SERVER+"/api/libraries/" + lib + "/tags",
+            url: SERVER + "/api/libraries/" + lib + "/tags",
             method: "GET",
         }).then((res) => {
             this.setState({ "tags": res.data })
@@ -178,7 +178,7 @@ class Selector extends React.Component {
 
         // fetch new folder-list
         axios({
-            url: SERVER+"/api/libraries/" + lib + "/folders",
+            url: SERVER + "/api/libraries/" + lib + "/folders",
             method: "GET",
         }).then((res) => {
             let folders_abs_path = res.data
@@ -218,17 +218,17 @@ class Selector extends React.Component {
         this.setState({ activeFolders: activeFolders })
         this.props.onNewReferenceQuery(this.state.activeLib, this.state.activeTags, activeFolders, this.state.activeQuery)
     }
-    
+
     onQueryChange(event) {
         let currentText = event.target.value
-        this.setState({activeQuery: currentText})
+        this.setState({ activeQuery: currentText })
     }
-    
+
     onQuerySubmit(currentLib) {
         currentLib = currentLib ? currentLib : this.state.activeQuery
         this.props.onNewReferenceQuery(this.state.activeLib, this.state.activeTags, this.state.activeFolders, currentLib)
     }
-    
+
     onQueryEnter(key) {
         if (key.key === "Enter") {
             this.onQuerySubmit()
@@ -236,59 +236,59 @@ class Selector extends React.Component {
     }
 
     render() {
-        return <div className="d-flex flex-column" style={{height: "100%"}}>
+        return <div className="d-flex flex-column" style={{ height: "100%" }}>
 
             <Title name="Selector" />
-            <div  style={{height: "100%", overflowY: "auto"}}>
-            <strong>Libraries</strong>
+            <div style={{ height: "100%", overflowY: "auto" }}>
+                <strong>Libraries</strong>
 
-            <ListGroup>
-                {
-                    this.state.libraries.map((lib, index) => {
-                        let active = this.state.activeLib === lib ? "active" : "";
-                        return <ListGroupItem key={index} className={active} action onClick={() => this.onSelectLib(lib, index)}>{lib}</ListGroupItem>
-                    })
-                }
-            </ListGroup>
+                <ListGroup>
+                    {
+                        this.state.libraries.map((lib, index) => {
+                            let active = this.state.activeLib === lib ? "active" : "";
+                            return <ListGroupItem key={index} className={active} action onClick={() => this.onSelectLib(lib, index)}>{lib}</ListGroupItem>
+                        })
+                    }
+                </ListGroup>
 
-            <strong>Query</strong>
-            <br />
-            <div>
-                <input
-                    type="input"
-                    id="inputQuery"
-                    value={this.state.activeQuery}
-                    onChange={(event) => this.onQueryChange(event)}
-                    onKeyUp={(key) => this.onQueryEnter(key)}
-                />
-                <Button variant="primary" onClick={() => this.onQuerySubmit()}> Search </Button>
+                <strong>Query</strong>
+                <br />
+                <div>
+                    <input
+                        type="input"
+                        id="inputQuery"
+                        value={this.state.activeQuery}
+                        onChange={(event) => this.onQueryChange(event)}
+                        onKeyUp={(key) => this.onQueryEnter(key)}
+                    />
+                    <Button variant="primary" onClick={() => this.onQuerySubmit()}> Search </Button>
+                </div>
+
+                <strong>Folders</strong>
+
+                <div>
+                    <Tree
+                        onSelect={(folderKey) => this.onSelectFolders(folderKey)}
+                        treeData={this.state.folders}
+                    />
+                </div>
+
+                <strong>Tags</strong>
+
+                <div>
+                    {
+                        this.state.tags.map((tag, index) => {
+                            return <Button
+                                key={index}
+                                variant={this.state.activeTags.indexOf(tag) >= 0 ? "primary" : "secondary"}
+                                onClick={() => this.onSelectTags(tag, index)}>
+                                {tag}
+                            </Button>
+                        })
+                    }
+                </div>
+
             </div>
-
-            <strong>Folders</strong>
-
-            <div>
-                <Tree
-                    onSelect={(folderKey) => this.onSelectFolders(folderKey)}
-                    treeData={this.state.folders}
-                />
-            </div>
-
-            <strong>Tags</strong>
-
-            <div>
-                {
-                    this.state.tags.map((tag, index) => {
-                        return <Button
-                            key={index}
-                            variant={this.state.activeTags.indexOf(tag) >= 0 ? "primary" : "secondary"}
-                            onClick={() => this.onSelectTags(tag, index)}>
-                            {tag}
-                        </Button>
-                    })
-                }
-            </div>
-
-        </div>
         </div>
     }
 }
@@ -307,7 +307,7 @@ class References extends React.Component {
 
     update() {
         axios({
-            url: SERVER+"/api/libraries/" + this.props.selectedLib + "/docs",
+            url: SERVER + "/api/libraries/" + this.props.selectedLib + "/docs",
             method: "GET",
             params: {
                 tags: this.props.tags,
@@ -329,29 +329,29 @@ class References extends React.Component {
             this.update()
         }
     }
-    
+
     getNumPages() {
         return Math.ceil(this.state.references.length / this.state.refsPerPage)
     }
-    
-    setPage(numPages, relative=false) {
+
+    setPage(numPages, relative = false) {
         let nextPage = relative ? this.state.currentPage + numPages : numPages
         if (relative === false && numPages < 0) {
             nextPage += this.getNumPages() + 1
         }
         nextPage = Math.max(nextPage, 1)
         nextPage = Math.min(nextPage, this.getNumPages())
-        this.setState({currentPage: nextPage})
+        this.setState({ currentPage: nextPage })
     }
-    
+
     setRefsPerPage(refsPerPage) {
         if (refsPerPage === this.state.refsPerPage) {
             return
         }
         this.setPage(0, false)
-        this.setState({refsPerPage: refsPerPage})
+        this.setState({ refsPerPage: refsPerPage })
     }
-    
+
     getCurrentRefsOnPage() {
         return this.state.references.slice(
             this.state.refsPerPage * (this.state.currentPage - 1),
@@ -360,53 +360,56 @@ class References extends React.Component {
     }
 
     onSelectRef(ref) {
-        this.setState({activeRef:ref})
+        this.setState({ activeRef: ref })
         this.props.onSelectRef(ref)
     }
 
     render() {
-        return <div className="d-flex flex-column" style={{height: "100%"}}>
+        return <div className="d-flex flex-column" style={{ height: "100%" }}>
             <Title name="References" />
             <Pagination>
+
                 <Pagination.First onClick={() => this.setPage(0, false)} />
                 <Pagination.Prev onClick={() => this.setPage(-1, true)} />
-                <Pagination.Item>{ this.state.currentPage }</Pagination.Item>
+                <Pagination.Item>{this.state.currentPage}</Pagination.Item>
                 <Pagination.Next onClick={() => this.setPage(1, true)} />
                 <Pagination.Last onClick={() => this.setPage(-1, false)} />
-            
+
                 <DropdownButton id="dropdown-basic-button" title={"Refs Per Page (" + this.state.refsPerPage + ")"}>
-                  <Dropdown.Item onClick={() => this.setRefsPerPage(10)}>10</Dropdown.Item>
-                  <Dropdown.Item onClick={() => this.setRefsPerPage(20)}>20</Dropdown.Item>
-                  <Dropdown.Item onClick={() => this.setRefsPerPage(50)}>50</Dropdown.Item>
-                  <Dropdown.Item onClick={() => this.setRefsPerPage(200)}>200</Dropdown.Item>
-                  <Dropdown.Item onClick={() => this.setRefsPerPage(10000)}>10000</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.setRefsPerPage(10)}>10</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.setRefsPerPage(20)}>20</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.setRefsPerPage(50)}>50</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.setRefsPerPage(200)}>200</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.setRefsPerPage(10000)}>10000</Dropdown.Item>
                 </DropdownButton>
 
             </Pagination>
 
-            <div  style={{height: "100%", overflowY: "scroll"}}>
-            
-            <ListGroup>
-                {
-                    this.getCurrentRefsOnPage().map((ref, index) => (
-                        <ListGroupItem
-                            action
-                            key={index}
-                            className={JSON.stringify(ref) === JSON.stringify(this.state.activeRef) ? "active" : ""}
-                            onClick={() => this.onSelectRef(ref)}
-                            tag="button"
-                        >
-                            <ListGroupItemHeading>
-                                {ref.title}
-                            </ListGroupItemHeading>
-                            <ListGroupItemText>
-                                <small>{ref['author']}</small><br />
-                                <small>{ref['journal']} ({(ref['year'])})</small>
-                            </ListGroupItemText>
-                        </ListGroupItem>
-                    ))
-                }
-            </ListGroup></div>
+            <div style={{ height: "100%", overflowY: "auto" }}>
+
+                <ListGroup>
+                    {
+                        this.getCurrentRefsOnPage().map((ref, index) => (
+                            <ListGroupItem
+                                action
+                                key={index}
+                                className={JSON.stringify(ref) === JSON.stringify(this.state.activeRef) ? "active" : ""}
+                                onClick={() => this.onSelectRef(ref)}
+                                tag="button"
+                            >
+                                <ListGroupItemHeading>
+                                    {ref.title}
+                                </ListGroupItemHeading>
+                                <ListGroupItemText>
+                                    <small>{ref['author']}</small><br />
+                                    <small>{ref['journal']} ({(ref['year'])})</small>
+                                </ListGroupItemText>
+                            </ListGroupItem>
+                        ))
+                    }
+                </ListGroup>
+
+            </div>
         </div>
     }
 }
@@ -420,7 +423,7 @@ const Attachments = (props) => {
     const files = [];
 
     for (let i = 0; i < numFiles; i++) {
-        let pdfURL = SERVER+"/api/libraries/" + selectedLib + "/docs/" + selectedRef._hash + "/file/" + i
+        let pdfURL = SERVER + "/api/libraries/" + selectedLib + "/docs/" + selectedRef._hash + "/file/" + i
         files.push(
             <Accordion.Item key={i} eventKey={i.toString()}>
                 <Accordion.Header>File {i}</Accordion.Header>
@@ -446,47 +449,47 @@ class Preview extends React.Component {
     /*     <Title name="References" /> */
     /*     <div  style={{height: "100%", overflowY: "auto"}}> */
     render() {
-        return <div className="d-flex flex-column" style={{height: "100%"}}>
+        return <div className="d-flex flex-column" style={{ height: "100%" }}>
             <Title name={"Preview: " + this.props.selectedRef.title} />
-            <div  style={{height: "100%", overflowY: "auto"}}>
-            <Tabs
-                defaultActiveKey="attachments"
-                id="uncontrolled-tab"
-                className="mb-3"
-            >
-                <Tab eventKey="attachments" title="Attachments">
+            <div style={{ height: "100%", overflowY: "auto" }}>
+                <Tabs
+                    defaultActiveKey="attachments"
+                    id="uncontrolled-tab"
+                    className="mb-3"
+                >
+                    <Tab eventKey="attachments" title="Attachments">
 
-                    <Attachments selectedLib={this.props.selectedLib} selectedRef={{ ...this.props.selectedRef }} />
+                        <Attachments selectedLib={this.props.selectedLib} selectedRef={{ ...this.props.selectedRef }} />
 
-                </Tab>
-
-
-                <Tab eventKey="notes" title="Notes">
-                    <NotesEditor selectedLib={this.props.selectedLib} selectedRef={{ ...this.props.selectedRef }} />
-                </Tab>
+                    </Tab>
 
 
-                <Tab eventKey="metadata" title="Metadata">
+                    <Tab eventKey="notes" title="Notes">
+                        <NotesEditor selectedLib={this.props.selectedLib} selectedRef={{ ...this.props.selectedRef }} />
+                    </Tab>
 
-                    <Table striped bordered hover>
-                        <thead>
-                            <tr>
-                                <th>Key</th>
-                                <th>Value</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {Object.keys(this.props.selectedRef).map((key, i) => {
-                                return <tr key={i}>
-                                    <td>{key}</td>
-                                    <td>{JSON.stringify(this.props.selectedRef[key])}</td>
+
+                    <Tab eventKey="metadata" title="Metadata">
+
+                        <Table striped bordered hover>
+                            <thead>
+                                <tr>
+                                    <th>Key</th>
+                                    <th>Value</th>
                                 </tr>
-                            })}
-                        </tbody>
-                    </Table>
+                            </thead>
+                            <tbody>
+                                {Object.keys(this.props.selectedRef).map((key, i) => {
+                                    return <tr key={i}>
+                                        <td>{key}</td>
+                                        <td>{JSON.stringify(this.props.selectedRef[key])}</td>
+                                    </tr>
+                                })}
+                            </tbody>
+                        </Table>
 
-                </Tab>
-            </Tabs>
+                    </Tab>
+                </Tabs>
             </div>
         </div>
     }
@@ -531,16 +534,16 @@ export default class App extends React.Component {
             <Container
                 className="bg-light border"
                 fluid
-                style={{height: "100vh", padding: 0, margin:0}}
+                style={{ height: "100vh", padding: 0, margin: 0 }}
             >
-                <Row style={{height: "100vh", padding: 0, margin:0, overflow:"hidden"}}>
-                    <Col className="bg-light border col-3" style={{height: "100%"}}>
+                <Row style={{ height: "100vh", padding: 0, margin: 0, overflow: "hidden" }}>
+                    <Col className="bg-light border col-3" style={{ height: "100%" }}>
                         <Selector onNewReferenceQuery={this.onNewReferenceQuery} />
                     </Col>
-                    <Col className="bg-light border" style={{height: "100%"}}>
+                    <Col className="bg-light border" style={{ height: "100%" }}>
                         <References selectedLib={this.state.selectedLib} tags={this.state.tags} activeFolders={this.state.activeFolders} activeQuery={this.state.activeQuery} onSelectRef={this.onSelectRef} />
                     </Col>
-                    <Col className="bg-light border" style={{height: "100%"}}>
+                    <Col className="bg-light border" style={{ height: "100%" }}>
                         <Preview selectedLib={this.state.selectedLib} selectedRef={{ ...this.state.selectedRef }} />
                     </Col>
                 </Row>
