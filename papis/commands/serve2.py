@@ -1,3 +1,4 @@
+import sys
 import click
 import re
 import os
@@ -82,10 +83,7 @@ def filter_folders(
 
 def create_app(cors: bool) -> Flask:
 
-    import __main__
-    p = Path(__main__.__file__)
-    web_dir = str(p.parent.parent / Path("share/web"))
-
+    web_dir = str( Path(sys.prefix) / Path("share/web") )
     app = Flask(__name__, static_folder=web_dir+"/static")
     if cors:
         CORS(app)
@@ -93,7 +91,6 @@ def create_app(cors: bool) -> Flask:
     @app.route("/", defaults={"path": "index.html"})
     @app.route("/<path:path>")
     def render_path(path: str) -> Any:
-        print("render path!!" + path)
         logging.debug(f"flask: GET, {path}")
         return send_from_directory(web_dir, path)
 
