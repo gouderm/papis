@@ -325,7 +325,7 @@ class References extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps !== this.props) {
+        if (prevProps["selectedLib"] !== this.props["selectedLib"]) {
             this.update()
         }
     }
@@ -364,6 +364,27 @@ class References extends React.Component {
         this.props.onSelectRef(ref)
     }
 
+    sort(key, reverse = false) {
+        let sortedRefs = this.state.references
+
+        sortedRefs = sortedRefs.sort((a, b) => {
+            if (!(key in a)) {
+                return 0
+            }
+            if (!(key in b)) {
+                return 0
+            }
+            let key_a = a[key].toString()
+            let key_b = b[key].toString()
+
+            let cmp = key_a.localeCompare(key_b)
+            cmp = reverse ? -cmp : cmp
+            return cmp
+        })
+
+        this.setState({ references: sortedRefs })
+    }
+
     render() {
         return <div className="d-flex flex-column" style={{ height: "100%" }}>
             <Title name="References" />
@@ -381,6 +402,17 @@ class References extends React.Component {
                     <Dropdown.Item onClick={() => this.setRefsPerPage(50)}>50</Dropdown.Item>
                     <Dropdown.Item onClick={() => this.setRefsPerPage(200)}>200</Dropdown.Item>
                     <Dropdown.Item onClick={() => this.setRefsPerPage(10000)}>10000</Dropdown.Item>
+                </DropdownButton>
+
+                <DropdownButton id="dropdown-basic-button" title={"Sort"}>
+                    <Dropdown.Item onClick={() => this.sort("title")}>title (asc)</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.sort("title", true)}>title (desc)</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.sort("time-added")}>time-added (asc)</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.sort("time-added", true)}>time-added (desc)</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.sort("author")}>author (asc)</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.sort("author", true)}>author (desc)</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.sort("year")}>year (asc)</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.sort("year", true)}>year (desc)</Dropdown.Item>
                 </DropdownButton>
 
             </Pagination>
