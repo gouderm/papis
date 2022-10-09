@@ -8,7 +8,7 @@ import {
     ListGroupItemText,
     ListGroupItemHeading,
 } from 'reactstrap';
-import { Accordion, Button, Pagination } from 'react-bootstrap';
+import { Button, Pagination, Badge } from 'react-bootstrap';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 
@@ -21,9 +21,13 @@ import 'bootstrap/dist/css/bootstrap.css';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
+
 // const SERVER = "http://localhost:8080" // only for development
 const SERVER = ""
 
+const TAGS_SPLIT_RX = /\s*[,\s]\s*/
 
 function convertToHierarchy(arry /* array of array of strings */) {
     var item, path;
@@ -159,6 +163,7 @@ class Selector extends React.Component {
             method: "GET",
         }).then((res) => {
             this.setState({ "libraries": res.data })
+            this.onSelectLib(res.data[0])
         }).catch((error) => {
             console.log("could not load libraries.", error)
         })
@@ -173,7 +178,7 @@ class Selector extends React.Component {
             url: SERVER + "/api/libraries/" + lib + "/tags",
             method: "GET",
         }).then((res) => {
-            this.setState({ "tags": res.data })
+            this.setState({ "tags": res.data.sort() })
         }).catch((error) => {
             console.log("could not load taglist.", error)
         })
@@ -244,14 +249,14 @@ class Selector extends React.Component {
             <div style={{ height: "100%", overflowY: "auto" }}>
                 <strong>Libraries</strong>
 
-                <ListGroup>
+                <DropdownButton title={this.state.activeLib}>
                     {
                         this.state.libraries.map((lib, index) => {
                             let active = this.state.activeLib === lib ? "active" : "";
-                            return <ListGroupItem key={index} className={active} action onClick={() => this.onSelectLib(lib, index)}>{lib}</ListGroupItem>
+                            return <Dropdown.Item key={index} className={active} action onClick={() => this.onSelectLib(lib, index)}>{lib}</Dropdown.Item>
                         })
                     }
-                </ListGroup>
+                </DropdownButton>
 
                 <strong>Query</strong>
                 <br />
@@ -433,6 +438,11 @@ class References extends React.Component {
                             >
                                 <ListGroupItemHeading>
                                     {ref.title}
+                                    {
+                                        (ref.tags || "").split(TAGS_SPLIT_RX).map((tag) => (
+                                            <Badge>{tag}</Badge>
+                                        ))
+                                    }
                                 </ListGroupItemHeading>
                                 <ListGroupItemText>
                                     <small>{ref['author']}</small><br />
@@ -448,6 +458,18 @@ class References extends React.Component {
     }
 }
 
+const DisabledButton = (props) => {
+    let title = props.title
+    let tooltip = props.tooltip
+    return <OverlayTrigger overlay={<Tooltip id="tooltip-disabled">{tooltip}</Tooltip>}>
+        <span className="d-inline-block">
+            <Button disabled style={{ pointerEvents: 'none' }}>
+                {title}
+            </Button>
+        </span>
+    </OverlayTrigger>
+}
+
 const Attachments = (props) => {
     let selectedLib = props.selectedLib
     let selectedRef = props.selectedRef
@@ -459,29 +481,30 @@ const Attachments = (props) => {
     for (let i = 0; i < numFiles; i++) {
         let pdfURL = SERVER + "/api/libraries/" + selectedLib + "/docs/" + selectedRef._hash + "/file/" + i
         files.push(
-            <Accordion.Item key={i} eventKey={i.toString()}>
-                <Accordion.Header>File {i}</Accordion.Header>
-                <Accordion.Body>
-                    <iframe id={i} title={i} src={pdfURL} style={{ width: "100%", height: "500px" }} />
-
+            <Tab key={i} eventKey={i.toString()} title={"File " + i.toString()}>
+                <div>
+                    <br></br>
                     <Button variant="primary" href={pdfURL}>Download</Button>
-                    <Button variant="dark" onClick={() => alert("Not yet implemented. Integration with ReactPage is planned.")}>Edit PDF</Button>
-                </Accordion.Body>
-            </Accordion.Item>
+                    <DisabledButton title="Annotate PDF" tooltip="Not yet implemented. Integration with react-pdf-annotations is planned." />
+
+                    <iframe id={i} title={i} src={pdfURL} style={{ width: "100%", height: "800px" }} />
+                </div>
+            </Tab>
         )
     }
 
-    return <Accordion defaultActiveKey={["0"]}>
+    return <Tabs
+        defaultActiveKey={["0"]}
+        style={{ height: "100%" }}
+        variant={"pills"}
+    >
         {files}
-    </Accordion>
+    </Tabs>
 }
 
 
 class Preview extends React.Component {
 
-    /* return <div className="d-flex flex-column" style={{height: "100%"}}> */
-    /*     <Title name="References" /> */
-    /*     <div  style={{height: "100%", overflowY: "auto"}}> */
     render() {
         return <div className="d-flex flex-column" style={{ height: "100%" }}>
             <Title name={"Preview: " + this.props.selectedRef.title} />
@@ -489,9 +512,9 @@ class Preview extends React.Component {
                 <Tabs
                     defaultActiveKey="attachments"
                     id="uncontrolled-tab"
-                    className="mb-3"
                 >
-                    <Tab eventKey="attachments" title="Attachments">
+
+                    <Tab eventKey="attachments" title="Attachments" style={{ height: "100%" }}>
 
                         <Attachments selectedLib={this.props.selectedLib} selectedRef={{ ...this.props.selectedRef }} />
 
