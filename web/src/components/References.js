@@ -142,9 +142,11 @@ class References extends React.Component {
                     {
                         this.getCurrentRefsOnPage().map((ref, index) => {
 
-                            let className = JSON.stringify(ref) === JSON.stringify(this.state.activeRef) ? "active" : ""
+                            let isActive = JSON.stringify(ref) === JSON.stringify(this.state.activeRef)
+                            let className = isActive ? "active" : ""
                             className += " d-flex justify-content-between align-items-start"
 
+                            console.log(this.props.tags.some(t => t === "c"))
                             return <ListGroup.Item
                                 action
                                 key={index}
@@ -157,7 +159,12 @@ class References extends React.Component {
                                         {ref.title + " "}
                                         {
                                             (ref.tags || "").split(CONSTANTS.TAGS_SPLIT_RX).map((tag, index) => (
-                                                <Badge key={index}>{tag}</Badge>
+                                                <Badge
+                                                    key={index} bg={this.props.tags.some(t => t === tag) ? "primary" : "secondary"}
+                                                    className={isActive ? "border" : ""}
+                                                >
+                                                    {tag}
+                                                </Badge>
                                             ))
                                         }
                                     </div>
@@ -177,3 +184,4 @@ class References extends React.Component {
 }
 
 export default References;
+                                /* variant={this.state.activeTags.indexOf(tag) >= 0 ? "primary" : "secondary"} */
