@@ -27,7 +27,7 @@ export default class App extends React.Component {
             config: {}
         };
     }
-    
+
     componentDidMount() {
         if (!this.mounted) {
             this.mounted = true
@@ -36,7 +36,7 @@ export default class App extends React.Component {
                 method: "GET",
             }).then((res) => {
                 let _config = res.data
-                this.setState({config: _config})
+                this.setState({ config: _config })
             }).catch((error) => {
                 console.log("could not load general config.", error)
             })
@@ -58,7 +58,7 @@ export default class App extends React.Component {
             selectedRef: ref,
         })
     }
-    
+
     render() {
         return (
             <Container
@@ -66,14 +66,14 @@ export default class App extends React.Component {
                 fluid
                 style={{ height: "100vh", padding: 0, margin: 0 }}
             >
-                <Row style={{ height: "100vh", padding: 0, margin: 0, overflow: "auto" }}>
-                    <Col className="border" style={{ height: "100%", minHeight: "100%", minWidth: "300px" }}>
+                <Row style={{ height: "100vh", padding: 0, margin: 0, overflow: "auto", scrollSnapType: "y mandatory" }}>
+                    <Col className="border" style={{ height: "100%", minHeight: "100%", minWidth: "300px", scrollSnapAlign: "start" }}>
                         <Selector config={this.state.config} onNewReferenceQuery={this.onNewReferenceQuery} />
                     </Col>
-                    <Col className="border" style={{ height: "100%", minHeight: "100%" }}>
+                    <Col className="border" style={{ height: "100%", minHeight: "100%", scrollSnapAlign: "start" }}>
                         <References selectedLib={this.state.selectedLib} tags={[].concat(this.state.tags)} activeFolders={[].concat(this.state.activeFolders)} activeQuery={this.state.activeQuery} onSelectRef={this.onSelectRef} />
                     </Col>
-                    <Col className="border" style={{ height: "100%", minHeight: "100%", minWidth: "340px" }}>
+                    <Col className="border" style={{ height: "100%", minHeight: "100%", minWidth: "340px", scrollSnapAlign: "start" }}>
                         <Preview selectedLib={this.state.selectedLib} selectedRef={{ ...this.state.selectedRef }} />
                     </Col>
                 </Row>
