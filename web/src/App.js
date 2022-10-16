@@ -7,28 +7,42 @@ import Col from 'react-bootstrap/Col';
 import "antd/dist/antd.css";
 import 'bootstrap/dist/css/bootstrap.css';
 
+
+import * as CONSTANTS from "./constants"
+
 import Selector from './components/Selector';
 import References from './components/References';
 import Preview from './components/Preview';
+import axios from 'axios';
 
 
 export default class App extends React.Component {
     constructor(props) {
         super(props);
 
-        this.toggle = this.toggle.bind(this);
         this.state = {
-            isOpen: false,
-            selectedLib: "papers",
+            selectedLib: "",
             tags: [],
             selectedRef: {},
+            config: {}
         };
     }
-    toggle() {
-        this.setState({
-            isOpen: !this.state.isOpen
-        });
+    
+    componentDidMount() {
+        if (!this.mounted) {
+            this.mounted = true
+            axios({
+                url: CONSTANTS.SERVER + "/api/config",
+                method: "GET",
+            }).then((res) => {
+                let _config = res.data
+                this.setState({config: _config})
+            }).catch((error) => {
+                console.log("could not load general config.", error)
+            })
+        }
     }
+
 
     onNewReferenceQuery = (lib, tags, folders, query) => {
         this.setState({
@@ -44,7 +58,7 @@ export default class App extends React.Component {
             selectedRef: ref,
         })
     }
-
+    
     render() {
         return (
             <Container
@@ -52,14 +66,14 @@ export default class App extends React.Component {
                 fluid
                 style={{ height: "100vh", padding: 0, margin: 0 }}
             >
-                <Row style={{ height: "100vh", padding: 0, margin: 0, overflow: "hidden" }}>
-                    <Col className="bg-light border col-3" style={{ height: "100%" }}>
-                        <Selector onNewReferenceQuery={this.onNewReferenceQuery} />
+                <Row style={{ height: "100vh", padding: 0, margin: 0, overflow: "auto" }}>
+                    <Col className="border" style={{ height: "100%", minHeight: "100%", minWidth: "300px" }}>
+                        <Selector config={this.state.config} onNewReferenceQuery={this.onNewReferenceQuery} />
                     </Col>
-                    <Col className="bg-light border" style={{ height: "100%" }}>
+                    <Col className="border" style={{ height: "100%", minHeight: "100%" }}>
                         <References selectedLib={this.state.selectedLib} tags={[].concat(this.state.tags)} activeFolders={[].concat(this.state.activeFolders)} activeQuery={this.state.activeQuery} onSelectRef={this.onSelectRef} />
                     </Col>
-                    <Col className="bg-light border" style={{ height: "100%" }}>
+                    <Col className="border" style={{ height: "100%", minHeight: "100%", minWidth: "340px" }}>
                         <Preview selectedLib={this.state.selectedLib} selectedRef={{ ...this.state.selectedRef }} />
                     </Col>
                 </Row>

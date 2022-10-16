@@ -8,7 +8,7 @@ class NotesEditor extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            "notes": "loading..."
+            notes: "loading..."
         }
     }
 

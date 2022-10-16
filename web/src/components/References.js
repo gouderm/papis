@@ -1,13 +1,12 @@
 import React from 'react';
 import axios from 'axios';
 import TitleBar from './TitleBar';
-import {
-    Pagination,
-    ListGroup,
-    Dropdown,
-    DropdownButton,
-    Badge,
-} from 'react-bootstrap';
+import Pagination from 'react-bootstrap/Pagination';
+import ListGroup from 'react-bootstrap/ListGroup';
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
+import Badge from 'react-bootstrap/Badge';
+import { FileOutlined, FileTextOutlined } from '@ant-design/icons';
 
 
 import * as CONSTANTS from "../constants"
@@ -17,10 +16,11 @@ class References extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            "references": [],
+            references: [],
             activeRef: undefined,
             currentPage: 1,
             refsPerPage: 20,
+            activeFilter: "",
         }
     }
 
@@ -33,14 +33,20 @@ class References extends React.Component {
                 activeFolders: this.props.activeFolders,
                 activeQuery: this.props.activeQuery
             }
+        }).then((res) => {
+            let _docs = res.data
+
+            if (this.state.sortKey) {
+                _docs = this.sort(_docs, this.state.sortKey, this.state.sortRev)
+            }
+
+            if (this.state.references !== _docs) {
+                this.setState({ "references": _docs })
+            }
+
+        }).catch((error) => {
+            console.log("could not load references.", error)
         })
-            .then((res) => {
-                if (this.state.references !== res.data) {
-                    this.setState({ "references": res.data })
-                }
-            }).catch((error) => {
-                console.log("could not load references.", error)
-            })
     }
 
     componentDidUpdate(prevProps) {
@@ -72,7 +78,9 @@ class References extends React.Component {
     }
 
     getCurrentRefsOnPage() {
-        return this.state.references.slice(
+        return this.state.references.filter((ref) => (
+            !this.state.activeFilter || JSON.stringify(ref).toLowerCase().includes(this.state.activeFilter.toLowerCase())
+        )).slice(
             this.state.refsPerPage * (this.state.currentPage - 1),
             this.state.refsPerPage * this.state.currentPage,
         )
@@ -83,26 +91,37 @@ class References extends React.Component {
         this.props.onSelectRef(ref)
     }
 
-    sort(key, reverse = false) {
-        let sortedRefs = this.state.references
 
-        sortedRefs = sortedRefs.sort((a, b) => {
+    sort(refs, key, reverse = false) {
+        let sortedRefs = refs.sort((a, b) => {
             if (!(key in a)) {
                 return 0
             }
             if (!(key in b)) {
                 return 0
             }
-            let key_a = a[key].toString()
-            let key_b = b[key].toString()
+            let key_a = String(a[key])
+            let key_b = String(b[key])
 
-            let cmp = key_a.localeCompare(key_b)
+            let cmp = key_a.localeCompare(key_b, undefined, { numeric: true })
             cmp = reverse ? -cmp : cmp
             return cmp
         })
 
-        this.setState({ references: sortedRefs })
+        return sortedRefs
     }
+
+
+    onSort(key, reverse = false) {
+        let sortedRefs = this.sort(this.state.references, key, reverse)
+        this.setState({ references: sortedRefs, sortKey: key, sortRev: reverse })
+    }
+
+    onFilterChange(event) {
+        let currentText = event.target.value
+        this.setState({ activeFilter: currentText, currentPage: 1 })
+    }
+
 
     render() {
         return <div className="d-flex flex-column" style={{ height: "100%" }}>
@@ -124,17 +143,24 @@ class References extends React.Component {
                 </DropdownButton>
 
                 <DropdownButton id="dropdown-basic-button" title={"Sort"}>
-                    <Dropdown.Item onClick={() => this.sort("title")}>title (asc)</Dropdown.Item>
-                    <Dropdown.Item onClick={() => this.sort("title", true)}>title (desc)</Dropdown.Item>
-                    <Dropdown.Item onClick={() => this.sort("time-added")}>time-added (asc)</Dropdown.Item>
-                    <Dropdown.Item onClick={() => this.sort("time-added", true)}>time-added (desc)</Dropdown.Item>
-                    <Dropdown.Item onClick={() => this.sort("author")}>author (asc)</Dropdown.Item>
-                    <Dropdown.Item onClick={() => this.sort("author", true)}>author (desc)</Dropdown.Item>
-                    <Dropdown.Item onClick={() => this.sort("year")}>year (asc)</Dropdown.Item>
-                    <Dropdown.Item onClick={() => this.sort("year", true)}>year (desc)</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.onSort("title")}>title (asc)</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.onSort("title", true)}>title (desc)</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.onSort("time-added")}>time-added (asc)</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.onSort("time-added", true)}>time-added (desc)</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.onSort("author")}>author (asc)</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.onSort("author", true)}>author (desc)</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.onSort("year")}>year (asc)</Dropdown.Item>
+                    <Dropdown.Item onClick={() => this.onSort("year", true)}>year (desc)</Dropdown.Item>
                 </DropdownButton>
 
             </Pagination>
+
+            <input
+                type="input"
+                id="inputQuery"
+                placeholder="filter"
+                onChange={(event) => this.onFilterChange(event)}
+            />
 
             <div style={{ height: "100%", overflowY: "auto" }}>
 
@@ -146,7 +172,6 @@ class References extends React.Component {
                             let className = isActive ? "active" : ""
                             className += " d-flex justify-content-between align-items-start"
 
-                            console.log(this.props.tags.some(t => t === "c"))
                             return <ListGroup.Item
                                 action
                                 key={index}
@@ -171,6 +196,16 @@ class References extends React.Component {
                                     <div>
                                         <small>{ref['author']}</small><br />
                                         <small>{ref['journal']} ({(ref['year'])})</small>
+
+                                        <div>
+                                            {
+                                                (ref['files'] || []).map(() => {
+                                                    return <FileOutlined />
+                                                })
+                                            }{
+                                                (ref['notes'] && <FileTextOutlined />)
+                                            }
+                                        </div>
                                     </div>
                                 </div>
                             </ListGroup.Item>
@@ -184,4 +219,3 @@ class References extends React.Component {
 }
 
 export default References;
-                                /* variant={this.state.activeTags.indexOf(tag) >= 0 ? "primary" : "secondary"} */

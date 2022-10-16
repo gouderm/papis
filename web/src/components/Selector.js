@@ -87,27 +87,38 @@ class Selector extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            "libraries": [],
+            libraries: [],
             activeLib: "", // selected Library
             activeTags: [], // selected Tags
             activeFolders: [], // selected Folderes
             activeQuery: "",
-            "tags": [], // all tags
-            "folders": [], // all folders
+            tags: [], // all tags
+            folders: [], // all folders
         }
     }
 
     componentDidMount() {
-        // fetch new library-list
-        axios({
-            url: CONSTANTS.SERVER + "/api/libraries",
-            method: "GET",
-        }).then((res) => {
-            this.setState({ "libraries": res.data })
-            this.onSelectLib(res.data[0])
-        }).catch((error) => {
-            console.log("could not load libraries.", error)
-        })
+        if (!this.mounted) {
+            this.mounted = true
+            
+            // fetch new library-list
+            axios({
+                url: CONSTANTS.SERVER + "/api/libraries",
+                method: "GET",
+            }).then((res) => {
+                this.setState({ "libraries": res.data })
+            }).catch((error) => {
+                console.log("could not load libraries.", error)
+            })
+        }
+    }
+    
+    componentDidUpdate(prevProps) {
+        if (JSON.stringify(prevProps) !== JSON.stringify(this.props)) {
+            if (!this.state.activeLib) {
+                this.onSelectLib(this.props.config["default-library"])
+            }
+        }
     }
 
     onSelectLib(lib, index) {
@@ -184,10 +195,10 @@ class Selector extends React.Component {
     }
 
     render() {
-        return <div className="d-flex flex-column" style={{ height: "100%" }}>
+        return <div className="d-flex flex-column" style={{ height: "100%", width: "100%" }}>
 
             <TitleBar name="Selector" />
-            <div style={{ height: "100%", overflowY: "auto" }}>
+            <div style={{ height: "100%", overflowY: "auto", width: "100%" }}>
                 <strong>Libraries</strong>
 
                 <DropdownButton title={this.state.activeLib}>
@@ -208,6 +219,7 @@ class Selector extends React.Component {
                         value={this.state.activeQuery}
                         onChange={(event) => this.onQueryChange(event)}
                         onKeyUp={(key) => this.onQueryEnter(key)}
+                        placeholder={"formater: " + this.props.config["formater"]}
                     />
                     <Button variant="primary" onClick={() => this.onQuerySubmit()}> Search </Button>
                 </div>
@@ -227,6 +239,7 @@ class Selector extends React.Component {
                     {
                         this.state.tags.map((tag, index) => {
                             return <Button
+                                size="sm"
                                 key={index}
                                 variant={this.state.activeTags.indexOf(tag) >= 0 ? "primary" : "secondary"}
                                 onClick={() => this.onSelectTags(tag, index)}>

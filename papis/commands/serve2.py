@@ -219,6 +219,12 @@ def create_app(cors: bool) -> Flask:
         if file_id > len(files):
             abort(404)
         return send_file(files[file_id])
+    
+    @app.route("/api/config")
+    def api_config() -> Any:
+        retDict = dict(papis.config.get_configuration()[papis.config.get_general_settings_name()])
+        return Response(json.dumps(retDict))
+        
 
     return app
 
