@@ -6,7 +6,7 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Badge from 'react-bootstrap/Badge';
-import { FileOutlined, FileTextOutlined } from '@ant-design/icons';
+import { FileOutlined, FileTextOutlined, SortAscendingOutlined } from '@ant-design/icons';
 
 
 import * as CONSTANTS from "../constants"
@@ -126,23 +126,24 @@ class References extends React.Component {
     render() {
         return <div className="d-flex flex-column" style={{ height: "100%" }}>
             <TitleBar name="References" />
-            <Pagination>
 
-                <Pagination.First onClick={() => this.setPage(0, false)} />
-                <Pagination.Prev onClick={() => this.setPage(-1, true)} />
-                <Pagination.Item>{this.state.currentPage}</Pagination.Item>
-                <Pagination.Next onClick={() => this.setPage(1, true)} />
-                <Pagination.Last onClick={() => this.setPage(-1, false)} />
+            <div className='d-flex justify-content-between'>
 
-                <DropdownButton id="dropdown-basic-button" title={"Refs Per Page (" + this.state.refsPerPage + ")"}>
+                <Pagination>
+                    <Pagination.First onClick={() => this.setPage(0, false)} />
+                    <Pagination.Prev onClick={() => this.setPage(-1, true)} />
+                    <Pagination.Item>{this.state.currentPage}</Pagination.Item>
+                    <Pagination.Next onClick={() => this.setPage(1, true)} />
+                    <Pagination.Last onClick={() => this.setPage(-1, false)} />
+                </Pagination>
+
+                <DropdownButton className="ms-auto" id="dropdown-sort" title={<SortAscendingOutlined />}>
                     <Dropdown.Item onClick={() => this.setRefsPerPage(10)}>10</Dropdown.Item>
                     <Dropdown.Item onClick={() => this.setRefsPerPage(20)}>20</Dropdown.Item>
                     <Dropdown.Item onClick={() => this.setRefsPerPage(50)}>50</Dropdown.Item>
                     <Dropdown.Item onClick={() => this.setRefsPerPage(200)}>200</Dropdown.Item>
                     <Dropdown.Item onClick={() => this.setRefsPerPage(10000)}>10000</Dropdown.Item>
-                </DropdownButton>
-
-                <DropdownButton id="dropdown-basic-button" title={"Sort"}>
+                    <Dropdown.Divider />
                     <Dropdown.Item onClick={() => this.onSort("title")}>title (asc)</Dropdown.Item>
                     <Dropdown.Item onClick={() => this.onSort("title", true)}>title (desc)</Dropdown.Item>
                     <Dropdown.Item onClick={() => this.onSort("time-added")}>time-added (asc)</Dropdown.Item>
@@ -153,14 +154,16 @@ class References extends React.Component {
                     <Dropdown.Item onClick={() => this.onSort("year", true)}>year (desc)</Dropdown.Item>
                 </DropdownButton>
 
-            </Pagination>
+            </div>
 
             <input
                 type="input"
                 id="inputQuery"
                 placeholder="filter"
                 onChange={(event) => this.onFilterChange(event)}
+                style={{ width: "100%" }}
             />
+
 
             <div style={{ height: "100%", overflowY: "auto" }}>
 

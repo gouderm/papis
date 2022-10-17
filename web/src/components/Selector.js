@@ -3,6 +3,7 @@ import axios from 'axios';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Button from 'react-bootstrap/Button'
+import Stack from 'react-bootstrap/Stack'
 
 import { Tree } from 'antd';
 
@@ -100,7 +101,7 @@ class Selector extends React.Component {
     componentDidMount() {
         if (!this.mounted) {
             this.mounted = true
-            
+
             // fetch new library-list
             axios({
                 url: CONSTANTS.SERVER + "/api/libraries",
@@ -112,7 +113,7 @@ class Selector extends React.Component {
             })
         }
     }
-    
+
     componentDidUpdate(prevProps) {
         if (JSON.stringify(prevProps) !== JSON.stringify(this.props)) {
             if (!this.state.activeLib) {
@@ -213,15 +214,21 @@ class Selector extends React.Component {
                 <strong>Query</strong>
                 <br />
                 <div>
-                    <input
-                        type="input"
-                        id="inputQuery"
-                        value={this.state.activeQuery}
-                        onChange={(event) => this.onQueryChange(event)}
-                        onKeyUp={(key) => this.onQueryEnter(key)}
-                        placeholder={"formater: " + this.props.config["formater"]}
-                    />
-                    <Button variant="primary" onClick={() => this.onQuerySubmit()}> Search </Button>
+                    <Stack direction="horizontal" gap={3}>
+                        <input
+                            className="me-auto"
+                            type="input"
+                            id="inputQuery"
+                            value={this.state.activeQuery}
+                            onChange={(event) => this.onQueryChange(event)}
+                            onKeyUp={(key) => this.onQueryEnter(key)}
+                            placeholder={"formater: " + this.props.config["formater"]}
+                            style={{ width: "100%" }}
+                        />
+                        <Button variant="primary" onClick={() => this.onQuerySubmit()}> Search </Button>
+
+                    </Stack>
+
                 </div>
 
                 <strong>Folders</strong>

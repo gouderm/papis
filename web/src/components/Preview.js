@@ -12,7 +12,7 @@ import Metadata from './Metadata';
 class Preview extends React.Component {
 
     render() {
-        return <Container className="d-flex flex-column" style={{ height: "100%" }}>
+        return <Container fluid className="d-flex flex-column" style={{ height: "100%", width: "100%" }}>
             <Row>
                 <TitleBar name={"Preview: " + this.props.selectedRef.title} />
             </Row>

@@ -64,7 +64,7 @@ export default class App extends React.Component {
             <Container
                 className="bg-light border"
                 fluid
-                style={{ height: "100vh", padding: 0, margin: 0 }}
+                style={{ height: "100vh", padding: 0, margin: 0, overflow: "hidden" }}
             >
                 <Row style={{ height: "100vh", padding: 0, margin: 0, overflow: "auto", scrollSnapType: "y mandatory" }}>
                     <Col className="border" style={{ height: "100%", minHeight: "100%", minWidth: "300px", scrollSnapAlign: "start" }}>
@@ -73,7 +73,7 @@ export default class App extends React.Component {
                     <Col className="border" style={{ height: "100%", minHeight: "100%", scrollSnapAlign: "start" }}>
                         <References selectedLib={this.state.selectedLib} tags={[].concat(this.state.tags)} activeFolders={[].concat(this.state.activeFolders)} activeQuery={this.state.activeQuery} onSelectRef={this.onSelectRef} />
                     </Col>
-                    <Col className="border" style={{ height: "100%", minHeight: "100%", minWidth: "340px", scrollSnapAlign: "start" }}>
+                    <Col className="border" style={{ height: "100%", minHeight: "100%", minWidth: "375px", scrollSnapAlign: "start" }}>
                         <Preview selectedLib={this.state.selectedLib} selectedRef={{ ...this.state.selectedRef }} />
                     </Col>
                 </Row>

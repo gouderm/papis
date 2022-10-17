@@ -50,7 +50,6 @@ class Attachments extends React.Component {
             </Row>
             <hr />
             <Row>
-
                 <Col>
                     <Button variant="primary" href={pdfURL}>Download</Button>
                     <DisabledButton title="Annotate PDF" tooltip="Not yet implemented. Integration with react-pdf-annotations is planned." />
