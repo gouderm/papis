@@ -10,6 +10,7 @@ import { Tree } from 'antd';
 import TitleBar from './TitleBar';
 
 import * as CONSTANTS from "../constants"
+import { compareObjects } from "../helperFunctions"
 
 function convertToHierarchy(arry /* array of array of strings */) {
     var item, path;
@@ -115,7 +116,7 @@ class Selector extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (JSON.stringify(prevProps) !== JSON.stringify(this.props)) {
+        if (!compareObjects(prevProps["config"], this.props["config"])) {
             if (!this.state.activeLib) {
                 this.onSelectLib(this.props.config["default-library"])
             }
@@ -198,7 +199,7 @@ class Selector extends React.Component {
     render() {
         return <div className="d-flex flex-column" style={{ height: "100%", width: "100%" }}>
 
-            <TitleBar name="Selector" />
+            <TitleBar name={this.props.title} />
             <div style={{ height: "100%", overflowY: "auto", width: "100%" }}>
                 <strong>Libraries</strong>
 

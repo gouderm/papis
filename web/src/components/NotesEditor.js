@@ -3,6 +3,7 @@ import axios from "axios";
 import { Textarea } from '@geist-ui/core'
 
 import * as CONSTANTS from "../constants"
+import { compareObjects } from '../helperFunctions';
 
 class NotesEditor extends React.Component {
     constructor(props) {
@@ -14,7 +15,7 @@ class NotesEditor extends React.Component {
 
 
     update() {
-        if (this.props.selectedRef._hash === undefined) return
+        if (!this.props.selectedRef._hash) return
 
         axios({
             url: CONSTANTS.SERVER + "/api/libraries/" + this.props.selectedLib + "/docs/" + this.props.selectedRef._hash + "/notes",
@@ -29,7 +30,7 @@ class NotesEditor extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (JSON.stringify(prevProps) !== JSON.stringify(this.props)) {
+        if (!compareObjects(prevProps, this.props)) {
             this.update()
         }
     }

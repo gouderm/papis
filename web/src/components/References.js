@@ -10,6 +10,7 @@ import { FileOutlined, FileTextOutlined, SortAscendingOutlined } from '@ant-desi
 
 
 import * as CONSTANTS from "../constants"
+import { compareObjects } from "../helperFunctions"
 
 
 class References extends React.Component {
@@ -48,9 +49,18 @@ class References extends React.Component {
             console.log("could not load references.", error)
         })
     }
+    
+    _compProps(prevProps, prop) {
+        return compareObjects(prevProps[prop], this.props[prop])
+    }
 
     componentDidUpdate(prevProps) {
-        if (JSON.stringify(prevProps) !== JSON.stringify(this.props)) {
+        if (
+            !this._compProps(prevProps, "selectedLib") ||
+            !this._compProps(prevProps, "tags") ||
+            !this._compProps(prevProps, "activeFolder") ||
+            !this._compProps(prevProps, "activeQuery")
+        ) {
             this.update()
         }
     }
@@ -87,8 +97,9 @@ class References extends React.Component {
     }
 
     onSelectRef(ref) {
-        this.setState({ activeRef: ref })
-        this.props.onSelectRef(ref)
+        let newRef = !compareObjects(this.state.activeRef, ref) ? ref : {}
+        this.setState({ activeRef: newRef})
+        this.props.onSelectRef(newRef)
     }
 
 
@@ -125,7 +136,7 @@ class References extends React.Component {
 
     render() {
         return <div className="d-flex flex-column" style={{ height: "100%" }}>
-            <TitleBar name="References" />
+            <TitleBar name={this.props.title} />
 
             <div className='d-flex justify-content-between'>
 
@@ -171,7 +182,7 @@ class References extends React.Component {
                     {
                         this.getCurrentRefsOnPage().map((ref, index) => {
 
-                            let isActive = JSON.stringify(ref) === JSON.stringify(this.state.activeRef)
+                            let isActive = compareObjects(ref, this.state.activeRef)
                             let className = isActive ? "active" : ""
                             className += " d-flex justify-content-between align-items-start"
 

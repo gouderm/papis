@@ -14,6 +14,10 @@ import Selector from './components/Selector';
 import References from './components/References';
 import Preview from './components/Preview';
 import axios from 'axios';
+import { MenuOutlined } from '@ant-design/icons';
+import { Button } from 'react-bootstrap';
+import TitleBar from './components/TitleBar';
+import { compareObjects } from './helperFunctions';
 
 
 export default class App extends React.Component {
@@ -24,7 +28,9 @@ export default class App extends React.Component {
             selectedLib: "",
             tags: [],
             selectedRef: {},
-            config: {}
+            config: {},
+            showSelector: true,
+            showPreview: false,
         };
     }
 
@@ -56,10 +62,15 @@ export default class App extends React.Component {
     onSelectRef = (ref) => {
         this.setState({
             selectedRef: ref,
+            showPreview: compareObjects(ref, {}) ? false : true,
         })
     }
 
     render() {
+        const SelectorButton = <MenuOutlined onClick={() => {
+            this.setState({ showSelector: !this.state.showSelector })
+        }} />
+
         return (
             <Container
                 className="bg-light border"
@@ -67,13 +78,24 @@ export default class App extends React.Component {
                 style={{ height: "100vh", padding: 0, margin: 0, overflow: "hidden" }}
             >
                 <Row style={{ height: "100vh", padding: 0, margin: 0, overflow: "auto", scrollSnapType: "y mandatory" }}>
-                    <Col className="border" style={{ height: "100%", minHeight: "100%", minWidth: "300px", scrollSnapAlign: "start" }}>
-                        <Selector config={this.state.config} onNewReferenceQuery={this.onNewReferenceQuery} />
+
+                    <Col hidden={!this.state.showSelector} className="border" style={{ height: "100%", minHeight: "100%", minWidth: "300px", scrollSnapAlign: "start" }}>
+                        <Selector  title={
+                        <div>
+                            {SelectorButton} Selector
+                        </div>
+                    } config={this.state.config} onNewReferenceQuery={this.onNewReferenceQuery} />
                     </Col>
+
                     <Col className="border" style={{ height: "100%", minHeight: "100%", scrollSnapAlign: "start" }}>
-                        <References selectedLib={this.state.selectedLib} tags={[].concat(this.state.tags)} activeFolders={[].concat(this.state.activeFolders)} activeQuery={this.state.activeQuery} onSelectRef={this.onSelectRef} />
+                        <References title={
+                            <div>
+                                {this.state.showSelector ? <></> : SelectorButton} References
+                            </div>
+                        } selectedLib={this.state.selectedLib} tags={[].concat(this.state.tags)} activeFolders={[].concat(this.state.activeFolders)} activeQuery={this.state.activeQuery} onSelectRef={this.onSelectRef} />
                     </Col>
-                    <Col className="border" style={{ height: "100%", minHeight: "100%", minWidth: "375px", scrollSnapAlign: "start" }}>
+
+                    <Col hidden={!this.state.showPreview} className="border" style={{ height: "100%", minHeight: "100%", minWidth: "375px", scrollSnapAlign: "start" }}>
                         <Preview selectedLib={this.state.selectedLib} selectedRef={{ ...this.state.selectedRef }} />
                     </Col>
                 </Row>
@@ -81,3 +103,4 @@ export default class App extends React.Component {
         )
     }
 }
+

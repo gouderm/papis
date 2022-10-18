@@ -2,6 +2,8 @@ import React from 'react';
 import { Table } from 'antd';
 import Container from 'react-bootstrap/Container'
 
+import { compareObjects } from '../helperFunctions';
+
 var columns = [
     {
         title: 'Key',
@@ -26,7 +28,7 @@ class Metadata extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (JSON.stringify(prevProps.selectedRef) !== JSON.stringify(this.props.selectedRef)) {
+        if (!compareObjects(prevProps.selectedRef, this.props.selectedRef)) {
 
             let dataSource = []
 

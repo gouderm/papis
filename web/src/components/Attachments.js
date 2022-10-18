@@ -7,6 +7,7 @@ import Container from 'react-bootstrap/Container';
 
 
 import * as CONSTANTS from "../constants"
+import { compareObjects } from '../helperFunctions';
 
 class Attachments extends React.Component {
     constructor(props) {
@@ -18,7 +19,7 @@ class Attachments extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (JSON.stringify(prevProps) !== JSON.stringify(this.props)) {
+        if (!compareObjects(prevProps, this.props)) {
             this.setState({ activeFileIndex: 0 })
         }
     }
@@ -26,6 +27,10 @@ class Attachments extends React.Component {
     render() {
         let selectedRef = this.props.selectedRef
         let pdfURL = CONSTANTS.SERVER + "/api/libraries/" + this.props.selectedLib + "/docs/" + this.props.selectedRef._hash + "/file/" + this.state.activeFileIndex
+
+        if (!selectedRef._hash) {
+            return <></>
+        }
 
         let numFiles = (selectedRef["files"] || []).length
 
