@@ -58,7 +58,7 @@ class References extends React.Component {
         if (
             !this._compProps(prevProps, "selectedLib") ||
             !this._compProps(prevProps, "tags") ||
-            !this._compProps(prevProps, "activeFolder") ||
+            !this._compProps(prevProps, "activeFolders") ||
             !this._compProps(prevProps, "activeQuery")
         ) {
             this.update()
