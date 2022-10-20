@@ -15,8 +15,6 @@ import References from './components/References';
 import Preview from './components/Preview';
 import axios from 'axios';
 import { MenuOutlined } from '@ant-design/icons';
-import { Button } from 'react-bootstrap';
-import TitleBar from './components/TitleBar';
 import { compareObjects } from './helperFunctions';
 
 
@@ -29,7 +27,7 @@ export default class App extends React.Component {
             tags: [],
             selectedRef: {},
             config: {},
-            showSelector: true,
+            showSelector: false,
             showPreview: false,
         };
     }
