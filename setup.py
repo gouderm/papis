@@ -46,6 +46,10 @@ else:
 
         ("share/man/man1", glob.glob("doc/build/man/*")),
         ("share/applications", ["contrib/papis.desktop"]),
+
+        ("share/web", glob.glob("papis-web/build/*.*")),
+        ("share/web/static/js", glob.glob("papis-web/build/static/js/*.*")),
+        ("share/web/static/css", glob.glob("papis-web/build/static/css/*.*")),
     ]
 
 included_packages = ["papis"] + ["papis." + p for p in find_packages("papis")]
@@ -138,6 +142,10 @@ setup(
             "types-requests",
             "types-tqdm",
         ],
+        "serve2":[
+            'Flask>=2.2.2',
+            'Flask-Cors>=3.0.10',
+        ],
     },
     description=(
         "Powerful and highly extensible command-line based document "
@@ -229,6 +237,7 @@ setup(
             "rm=papis.commands.rm:cli",
             "run=papis.commands.run:cli",
             "serve=papis.commands.serve:cli",
+            "serve2=papis.commands.serve2:cli",
             "update=papis.commands.update:cli",
         ],
         "papis.downloader": [
