@@ -1,27 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Badge } from 'react-bootstrap';
 import Table from 'react-bootstrap/Table';
-import { TAGS_SPLIT_RX } from '../constants';
 import { BsArrowDown, BsArrowUp } from "react-icons/bs";
+import { Tags } from './basic/Tags';
 
 
-function Title({ text, refTags, tags, setTags }) {
-  if (!refTags) refTags = []
-
-  const selectedTags = []
-  for (let t of Object.keys(tags)) if (tags[t]) selectedTags.push(t)
-
-  function toggleTag(t) {
-    let _tags = { ...tags }
-    _tags[t] = !_tags[t]
-    setTags(_tags)
-  }
-
-  return <span>{text}{refTags.map(tag => {
-    let active = selectedTags.includes(tag) ? "primary" : "secondary"
-    return <Badge bg={active} onClick={() => toggleTag(tag)}><a>{tag}</a></Badge>
-  })}</span>
-
+function Title({ text, refTagsStr, tags, setTags }) {
+  return <div>
+    {text}
+    <Tags refTagsStr={refTagsStr} tags={tags} setTags={setTags} />
+  </div>
 }
 
 function Ref({
@@ -44,8 +31,7 @@ function Ref({
       let val = "";
       switch (key) {
         case "title":
-          let refTags = r["tags"] ? r["tags"].split(TAGS_SPLIT_RX) : []
-          val = <Title text={r[key]} refTags={refTags} tags={tags} setTags={setTags} />
+          val = <Title text={r[key]} refTagsStr={r["tags"]} tags={tags} setTags={setTags} />
           break;
 
         default:
@@ -102,7 +88,7 @@ function References({
   return <div>
     <div className='table-responsive' style={{ height: "100%", overflowY: "scroll" }}>
       <Table>
-        <thead style={{position: "sticky", top: "0", background:"white", borderBottom: "1px solid black"}}>
+        <thead style={{ position: "sticky", top: "0", background: "white", borderBottom: "1px solid black" }}>
           <tr>
             <th>#</th>
             {keys.map((key, i) => <th><HeaderItem keyName={key} sortKey={sortKey} setSortKey={setSortKey} /></th>)}

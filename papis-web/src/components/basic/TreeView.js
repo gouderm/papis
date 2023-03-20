@@ -1,5 +1,6 @@
 import React from "react";
 import { BsFolder, BsFolderPlus, BsFolderMinus } from "react-icons/bs";
+import "./TreeView.css"
 
 
 function createObj(key, title, url) {
@@ -69,7 +70,7 @@ function TreeNode({ nodeKey, folderTree, setFolderTree }) {
     setFolderTree(newFolderTree)
   }
 
-  return <ul>
+  return <li>
     {(children.length === 0) ? <BsFolder /> :
       (collapsed ? <BsFolderPlus onClick={onCollapseToggle} /> : <BsFolderMinus onClick={onCollapseToggle} />)}
 
@@ -77,18 +78,17 @@ function TreeNode({ nodeKey, folderTree, setFolderTree }) {
       onClick={onToggleActive}
     >    <a>{title}</a></span>
 
-    {!collapsed && children.map(nodeKey => (
+    {!collapsed && <ul>{children.map(nodeKey => (
       <TreeNode
         nodeKey={nodeKey}
         folderTree={folderTree}
         setFolderTree={setFolderTree}
       />
-    ))}
-  </ul>
+    ))}</ul>}
+  </li>
 }
 
 function TreeList({ folderTree, setFolderTree }) {
-
   return <ul>
     {Object.keys(folderTree).map(keyName => {
       return folderTree[keyName].root &&

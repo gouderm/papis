@@ -1,0 +1,10 @@
+.editable:hover {
+    border: 1px solid #7a7a7a;
+    border-radius: 5px;
+}
+
+.editable {
+    border: 1px solid transparent;
+    transition: border .10s;
+    cursor: pointer;
+}
