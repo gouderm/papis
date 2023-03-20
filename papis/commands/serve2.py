@@ -64,7 +64,7 @@ def doc_from_hash(lib: str, hash: str) -> papis.document.Document:
 def filter_tags(tags: List[str]) -> Callable[[papis.document.Document], bool]:
 
     def _filter_fn(doc: papis.document.Document) -> bool:
-        if not doc.has("tags"):
+        if "tags" not in doc:
             return False
 
         doc_tags = get_tag_list(doc["tags"])
@@ -267,7 +267,7 @@ def create_app(git: bool = False) -> Flask:
         if request.method == "PUT":
             papis.notes.notes_path_ensured(doc, lib)
 
-        if not doc.has("notes"):
+        if "notes" not in doc:
             abort(404)
 
         if request.method in ["GET", "PUT"]:
