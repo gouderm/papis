@@ -7,6 +7,8 @@ from typing import Callable, List, Union, Any
 import hashlib
 from pathlib import Path
 import sys
+import tempfile
+import shutil
 
 from flask import (Flask, send_from_directory,
                    request, Response, send_file, abort, jsonify)
@@ -16,10 +18,13 @@ import papis.api
 import papis.cli
 import papis.config
 import papis.document
+import papis.notes
 import papis.commands.add
 import papis.commands.update
 import papis.commands.export
 import papis.crossref
+import papis.yaml
+import papis.bibtex
 
 
 logger = logging.getLogger("papis:server2")
@@ -30,6 +35,9 @@ TAGS_SPLIT_RX = re.compile(r"\s*[,\s]\s*")
 def get_tag_list(tags: Union[str, List[str]]) -> List[str]:
     if isinstance(tags, list):
         return tags
+
+    if tags is None:
+        return []
 
     if tags == "":
         return []
@@ -84,7 +92,7 @@ def filter_folders(
     return _filter_fn
 
 
-def create_app() -> Flask:
+def create_app(git: bool = False) -> Flask:
 
     web_dir = str(Path(sys.prefix) / Path("share/web"))
     app = Flask(__name__, static_folder=web_dir + "/static")
@@ -107,7 +115,7 @@ def create_app() -> Flask:
             abort(404)
 
         docs = papis.api.get_all_documents_in_lib(lib)
-        tags_of_tags = [get_tag_list(d["tags"]) for d in docs]
+        tags_of_tags = [get_tag_list(d.get("tags", "")) for d in docs]
         tags = sorted(set(tag
                           for _tags in tags_of_tags
                           for tag in _tags))
@@ -186,39 +194,120 @@ def create_app() -> Flask:
         ret = json.dumps(docs)
         return Response(ret, mimetype="application/json")
 
-    @app.route("/api/libraries/<string:lib>/docs/<string:ref_id>")
+    @app.route("/api/libraries/<string:lib>/docs/<string:ref_id>", methods=["GET", "POST"])
     def api_docs_id(lib: str, ref_id: str) -> Any:
         doc = doc_from_hash(lib, ref_id)
         if doc is None:
             abort(404)
+
+        if request.method == "POST":
+
+            result = {}
+            form = json.loads(request.data)
+            new_key = form.get("newkey-name")
+            new_val = form.get("newkey-val", "")
+
+            if new_key is not None:
+                result[new_key] = new_val
+
+            papis.commands.update.run(document=doc,
+                                      data=result,
+                                      library_name=lib,
+                                      git=git)
+
+            doc.update(data=result)
+            doc["_hash"] = doc_to_hash(doc)
+
         ret = json.dumps(doc)
         return Response(ret, mimetype="application/json")
 
-    @app.route("/api/libraries/<string:lib>/docs/<string:ref_id>/notes")
+    @app.route("/api/libraries/<string:lib>/docs/<string:ref_id>/files/<path:file>", methods=["GET"])
+    def api_docs_id_file(lib: str, ref_id: str, file: str) -> Any:
+        doc = doc_from_hash(lib, ref_id)
+        if doc is None:
+            abort(404)
+
+        return send_from_directory(doc.get_main_folder(), file)
+
+    @app.route("/api/libraries/<string:lib>/docs/<string:ref_id>/files/info.yaml", methods=["GET", "POST"])
+    def api_docs_id_info(lib: str, ref_id: str) -> Any:
+        doc = doc_from_hash(lib, ref_id)
+        if doc is None:
+            abort(404)
+
+        info_path = doc.get_info_file()
+
+        if request.method == "POST":
+            new_info = request.get_data().decode("utf-8")
+            logger.info("checking syntax of the yaml")
+            with tempfile.NamedTemporaryFile(mode="w+", delete=False) as fdr:
+                fdr.write(new_info)
+            try:
+                papis.yaml.yaml_to_data(fdr.name, raise_exception=True)
+            except ValueError as e:
+                os.unlink(fdr.name)
+                abort(400, "Error in yaml")
+
+            else:
+                os.unlink(fdr.name)
+                logger.info("info text seems ok")
+                with open(info_path, "w+") as _fdr:
+                    _fdr.write(new_info)
+                doc.load()
+                papis.api.save_doc(doc, lib)
+
+        return send_file(info_path)
+
+    @app.route("/api/libraries/<string:lib>/docs/<string:ref_id>/notes", methods=["GET", "PUT", "DELETE", "POST"])
     def api_docs_id_notes(lib: str, ref_id: str) -> Any:
-        selected_ref = doc_from_hash(lib, ref_id)
-        if selected_ref is None:
+        doc = doc_from_hash(lib, ref_id)
+        if doc is None:
             abort(404)
 
-        selected_ref_notes = ""
-        if selected_ref.has("notes"):
-            notes_file = selected_ref.get_main_folder() + "/" + \
-                selected_ref["notes"]
-            with open(notes_file, "r") as notes:
-                selected_ref_notes = notes.read()
+        if request.method == "PUT":
+            papis.notes.notes_path_ensured(doc, lib)
 
-        return Response(json.dumps(selected_ref_notes))
-
-    @app.route("/api/libraries/<string:lib>/docs/<string:ref_id>/file/<int:file_id>")
-    def api_docs_id_file(lib: str, ref_id: str, file_id: int) -> Any:
-        selected_ref = doc_from_hash(lib, ref_id)
-        if selected_ref is None:
+        if not doc.has("notes"):
             abort(404)
 
-        files = selected_ref.get_files()
-        if file_id > len(files):
+        if request.method in ["GET", "PUT"]:
+            return send_from_directory(doc.get_main_folder(), doc["notes"])
+
+        if request.method == "DELETE":
+            if doc["notes"] is not None:
+                notes_file = Path(doc.get_main_folder()) / doc["notes"]
+                if os.path.isfile(notes_file):
+                    os.remove(notes_file)
+
+            doc.pop("notes", None)
+            papis.api.save_doc(doc, lib)
+
+            return "200 OK"
+
+        if request.method == "POST":
+            with open(Path(doc.get_main_folder()) / doc["notes"], "w+") as f:
+                f.write(request.get_data().decode("utf-8"))
+            return "200 OK"
+
+    @app.route("/api/libraries/<string:lib>/docs/<string:ref_id>/bibtex")
+    def api_docs_id_bibtex(lib: str, ref_id: str) -> Any:
+        doc = doc_from_hash(lib, ref_id)
+        if doc is None:
             abort(404)
-        return send_file(files[file_id])
+        return jsonify(papis.bibtex.to_bibtex(doc))
+
+    @app.route("/api/libraries/<string:lib>/docs/<string:ref_id>/zip")
+    def api_docs_id_zip(lib: str, ref_id: str) -> Any:
+        doc = doc_from_hash(lib, ref_id)
+        if doc is None:
+            abort(404)
+
+        with tempfile.NamedTemporaryFile(suffix=".zip") as f:
+            zip_file = Path(f.name)
+            zip_file_without_suffix = zip_file.parent / zip_file.stem
+            shutil.make_archive(zip_file_without_suffix, "zip", doc.get_main_folder())
+
+            return send_file(zip_file, as_attachment=True, download_name=doc.get_main_folder_name() + ".zip")
 
     @app.route("/api/config/kv/<string:key>")
     def api_get_config_key_value(key: str):
@@ -232,7 +321,7 @@ def create_app() -> Flask:
     return app
 
 
-@click.command('serve')
+@click.command('serve2')
 @click.help_option('-h', '--help')
 @click.option("-p", "--port",
               help="Port to listen to",
@@ -246,8 +335,6 @@ def cli(address: str, port: int, git: bool) -> None:
     """
     Start a papis server
     """
-    global USE_GIT
-    USE_GIT = git
     logger.info("starting server in address http://%s:%s",
                 address or "localhost",
                 port)
@@ -255,6 +342,6 @@ def cli(address: str, port: int, git: bool) -> None:
     logger.info("THIS COMMAND IS EXPERIMENTAL, "
                 "expect bugs, feedback appreciated")
 
-    app = create_app()
+    app = create_app(git=git)
     address = "0.0.0.0"
     app.run(debug=True, host=address, port=port)
