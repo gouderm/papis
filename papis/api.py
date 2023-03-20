@@ -220,7 +220,7 @@ def doi_to_data(doi: str) -> Dict[str, Any]:
     return papis.crossref.doi_to_data(doi)
 
 
-def save_doc(doc: papis.document.Document) -> None:
+def save_doc(doc: papis.document.Document, library_name: Optional[str] = None) -> None:
     """
     Save the document to disk.
 
@@ -231,6 +231,6 @@ def save_doc(doc: papis.document.Document) -> None:
     """
     import papis.database
 
-    db = papis.database.get()
+    db = papis.database.get(library_name)
     doc.save()
     db.update(doc)

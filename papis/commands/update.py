@@ -61,13 +61,15 @@ import papis.logging
 logger = papis.logging.get_logger(__name__)
 
 
-def _update_with_database(document: papis.document.Document) -> None:
+def _update_with_database(document: papis.document.Document,
+                          library_name: Optional[str] = None) -> None:
     document.save()
-    papis.database.get().update(document)
+    papis.database.get(library_name).update(document)
 
 
 def run(document: papis.document.Document,
         data: Optional[Dict[str, Any]] = None,
+        library_name: Optional[str] = None,
         git: bool = False) -> None:
     if data is None:
         data = {}
@@ -76,7 +78,7 @@ def run(document: papis.document.Document,
     # writing LaTeX documents and all the ref's change
     data["ref"] = document["ref"]
     document.update(data)
-    _update_with_database(document)
+    _update_with_database(document, library_name)
     folder = document.get_main_folder()
     info = document.get_info_file()
     if not folder or not info:

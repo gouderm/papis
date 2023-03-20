@@ -2,6 +2,7 @@
 This module controls the notes for every papis document.
 """
 import os
+from typing import Optional
 
 import papis.config
 import papis.api
@@ -18,7 +19,8 @@ def has_notes(doc: papis.document.Document) -> bool:
     return "notes" in doc
 
 
-def notes_path(doc: papis.document.Document) -> str:
+def notes_path(doc: papis.document.Document,
+               library_name: Optional[str] = None) -> str:
     """
     It returns the notes path of a document even if this
     document did not have a notes field.
@@ -32,17 +34,18 @@ def notes_path(doc: papis.document.Document) -> str:
     notes_name = papis.config.getstring("notes-name")
     notes_name = papis.format.format(notes_name, doc)
     doc["notes"] = papis.utils.clean_document_name(notes_name)
-    papis.api.save_doc(doc)
-    return notes_path(doc)
+    papis.api.save_doc(doc, library_name)
+    return notes_path(doc, library_name)
 
 
-def notes_path_ensured(doc: papis.document.Document) -> str:
+def notes_path_ensured(doc: papis.document.Document,
+                       library_name: Optional[str] = None) -> str:
     """
     It returns a file descriptor for the notes.
     If the notes file does not exist it creates one with the content of
     ``notes-template`` file included.
     """
-    _notes_path = notes_path(doc)
+    _notes_path = notes_path(doc, library_name)
     if not os.path.exists(_notes_path):
         templ_path = (os.path.expanduser(papis.config
                                          .getstring("notes-template")))
